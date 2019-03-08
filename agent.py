@@ -1,23 +1,27 @@
 import gym
 import gym_rlbot
 
+from model import DQN
+import torch
 
 class RaLLy():
-    def __init__(self, name):
+    def __init__(self, name, env):
         self.name = name
+        self.env = env
+        
+        self.model = DQN()
 
-    def train(self, env):
+    def train(self):
+        obs = env.reset()
         while True:
-            env.step(env.action_space.sample()) # take a random action
+            with torch.no_grad():
+                control, jump, boost, handbrake = self.model(torch.tensor(obs))
+            obs, reward, scored, _ = env.step([*control, jump.item(), boost.item(), handbrake.item()])
 
-        # print(f"Agent name: {self.name}")
-        # obs = env.reset()
-        # print(obs)
-        # for _ in range(1000):
 
 if __name__ == "__main__":
     env = gym.make('RLBotEnv-v0')
     print(env.action_space)
     print(env.observation_space)
-    agent = RaLLy("WaLLy")
-    agent.train(env)
+    agent = RaLLy("WaLLy", env)
+    agent.train()
