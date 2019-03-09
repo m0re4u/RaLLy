@@ -6,6 +6,9 @@ import numpy as np
 from ddpg import DDPGTrainer
 from utils import ReplayMemory
 
+import traceback
+import sys
+
 class RaLLy():
     def __init__(self, name, env):
         self.name = name
@@ -25,11 +28,12 @@ class RaLLy():
         episode_timesteps = 0
         episode_num = 0
         episode_done = True
+        episode_reward = 0
 
         while total_timesteps < self.max_timesteps:
             if episode_done:
                 if total_timesteps != 0:
-                    print(f"Total steps: {total_timesteps:12} | Episodes: {episode_num:3}")
+                    print(f"Total steps: {total_timesteps:12} | Episodes: {episode_num:3} | Total reward: {episode_reward}")
                     # TODO: get training stats
                     policy.train(self.memory, episode_timesteps, self.batch_size, self.discount, self.tau)
 
@@ -44,10 +48,12 @@ class RaLLy():
             control, jump, boost, handbrake = policy.actor(torch.tensor(obs))
             action = torch.cat([control, jump, boost, handbrake])
 
-            # TODO: add noise
-            # if self.explore_noise != 0:
-            #     action = (action + np.random.normal(0, self.explore_noise, size=env.action_space.shape[0])).clip(
-            #         env.action_space.low, env.action_space.high)
+            if self.explore_noise != 0:
+                noise = np.random.normal(0, self.explore_noise, size=5)
+                noise = torch.clamp(torch.Tensor(noise), -1, 1)
+                noise = torch.cat([noise, torch.zeros(3)])
+                action = action + noise
+                action = torch.clamp(action, -1, 1)
 
             # Perform action
             new_obs, reward, done, _ = env.step(action.detach())
@@ -68,4 +74,9 @@ if __name__ == "__main__":
     print(env.action_space)
     print(env.observation_space)
     agent = RaLLy("WaLLy", env)
-    agent.train()
+    try:
+        agent.train()
+    except Exception as e:
+        traceback.print_exc(file=sys.stdout)
+        env.manager.kill_sub_processes()
+
