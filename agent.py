@@ -15,7 +15,7 @@ class RaLLy():
         self.env = env
         self.eps = 0.005
         self.max_timesteps = 10000
-        self.explore_noise = 0.1
+        self.explore_noise = 0.5
         self.batch_size = 32
         self.discount = 0.99
         self.tau = 0.005
@@ -49,11 +49,13 @@ class RaLLy():
             action = torch.cat([control, jump, boost, handbrake])
 
             if self.explore_noise != 0:
-                noise = np.random.normal(0, self.explore_noise, size=5)
+                noise = np.random.normal(0, self.explore_noise, size=1)
                 noise = torch.clamp(torch.Tensor(noise), -1, 1)
                 noise = torch.cat([noise, torch.zeros(3)])
                 action = action + noise
                 action = torch.clamp(action, -1, 1)
+
+            print(action)
 
             # Perform action
             new_obs, reward, done, _ = env.step(action.detach())

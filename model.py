@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 
 class Actor(nn.Module):
-    def __init__(self, num_inputs=21, num_control_actions=5):
+    def __init__(self, num_inputs=9, num_control_actions=1):
         super(Actor, self).__init__()
         self.fc1 = nn.Linear(num_inputs, 128)
         self.fc2 = nn.Linear(128, 64)
@@ -16,14 +16,17 @@ class Actor(nn.Module):
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
         control = torch.tanh(self.fc3(x))
-        jump = self.soft(self.fc3_1(x))
-        boost = self.soft(self.fc3_2(x))
-        handbrake = self.soft(self.fc3_3(x))
+        # jump = self.soft(self.fc3_1(x))
+        # boost = self.soft(self.fc3_2(x))
+        # handbrake = self.soft(self.fc3_3(x))
+        jump = 0 * self.fc3_1(x)
+        boost = 0 * self.fc3_2(x)
+        handbrake = 0 * self.fc3_3(x)
 
         return control, jump, boost, handbrake
 
 class Critic(nn.Module):
-    def __init__(self, num_inputs=21, num_actions=8):
+    def __init__(self, num_inputs=9, num_actions=4):
         super(Critic, self).__init__()
         self.fc1 = nn.Linear(num_inputs, 128)
         self.fc2 = nn.Linear(128 + num_actions, 64)

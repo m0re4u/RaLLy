@@ -10,7 +10,7 @@ class DDPGTrainer(object):
         self.actor = Actor().to(device)
         self.actor_target = Actor().to(device)
         self.actor_target.load_state_dict(self.actor.state_dict())
-        self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=1e-4)
+        self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr= 0.0001)
 
         self.critic = Critic().to(device)
         self.critic_target = Critic().to(device)
